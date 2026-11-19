@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="task-app-container">
+        <header class="app-header">
+            <h1>Task Tracker</h1>
+            <p>Manage your daily full-stack development workflows</p>
+        </header>
+
+        <main class="task-main">
+            <!-- Form to Input New Tasks -->
+            <form id="task-form" class="task-input-group">
+                <input 
+                    type="text" 
+                    id="task-input" 
+                    placeholder="Add a new task here..." 
+                    autocomplete="off" 
+                    required
+                >
+                <button type="submit" class="add-task-btn">Add Task</button>
+            </form>
+
+            <!-- Task Counter and Dashboard Metrics Status -->
+            <div class="task-stats">
+                <p>Total Tasks: <span id="total-count">0</span></p>
+                <p>Completed: <span id="completed-count">0</span></p>
+            </div>
+
+            <!-- Dynamic Task List Render Container Target Wrapper -->
+            <ul id="task-list" class="task-list-wrapper">
+                <!-- script.js will dynamically insert list elements here -->
+            </ul>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

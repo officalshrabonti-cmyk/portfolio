@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Web App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌤️Weather App website</h1>
+        <p class="subtitle">Get current and 24-hour weather for any location</p>
+
+        <div class="search-box">
+            <input type="text" id="locationInput" placeholder="Enter a location (e.g., Dhaka, Chittagong)">
+            <button id="useLocationBtn">📍 Use My Location</button>
+            <button id="getWeatherBtn">Get Weather</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">Loading weather data...</div>
+
+        <div id="currentWeather" class="weather-card" style="display: none;">
+            <div class="current-main">
+                <div class="icon-condition">
+                    <div id="weatherIcon" class="weather-icon">☁️</div>
+                    <p id="condition">Partly Cloudy</p>
+                </div>
+
+                <div class="temp-location">
+                    <h2 id="locationName">Dhaka, Bangladesh</h2>
+                    <p id="updatedTime">Updated: --</p>
+                    <h1 id="temperature">28°C</h1>
+                </div>
+
+                <div class="details">
+                    <p>💨 Wind Speed: <span id="windSpeed">--</span> km/h</p>
+                    <p>💧 Chance of Rain: <span id="precipProb">--</span>%</p>
+                    <p>🌡️ Feels Like: <span id="feelsLike">--</span>°C</p>
+                </div>
+
+                <button id="refreshBtn">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div id="hourlySection" class="hourly-section" style="display: none;">
+            <div class="hourly-box">
+                <h3>🕒 Previous 24 Hours</h3>
+                <div id="previousHours" class="hours-container"></div>
+            </div>
+
+            <div class="hourly-box">
+                <h3>🕒 Next 24 Hours</h3>
+                <div id="nextHours" class="hours-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const locationInput = document.getElementById("locationInput");
+        const getWeatherBtn = document.getElementById("getWeatherBtn");
+        const useLocationBtn = document.getElementById("useLocationBtn");
+        const refreshBtn = document.getElementById("refreshBtn");
+        const loading = document.getElementById("loading");
+        const currentWeather = document.getElementById("currentWeather");
+        const hourlySection = document.getElementById("hourlySection");
+
+        getWeatherBtn.addEventListener("click", function () {
+            const location = locationInput.value.trim();
+            if (location) {
+                getWeatherByName(location);
+            } else {
+                alert("দয়া করে একটি লোকেশন লিখুন");
+            }
+        });
+
+        useLocationBtn.addEventListener("click", function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        getWeatherByCoords(position.coords.latitude, position.coords.longitude, "Current Location");
+                    },
+                    function () {
+                        alert("লোকেশন পারমিশন দিন");
+                    }
+                );
+            } else {
+                alert("আপনার ব্রাউজার Geolocation সাপোর্ট করে না");
+            }
+        });
+
+        refreshBtn.addEventListener("click", function () {
+            const name = document.getElementById("locationName").textContent;
+            if (name) getWeatherByName(name);
+        });
+
+        async function getWeatherByName(locationName) {
+            loading.style.display = "block";
+            currentWeather.style.display = "none";
+            hourlySection.style.display = "none";
+
+            try {
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1`;
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error("লোকেশন পাওয়া যায়নি");
+                }
+
+                const place = geoData.results[0];
+                const fullName = place.name + (place.admin1 ? ", " + place.admin1 : "") + (place.country ? ", " + place.country : "");
+
+                await getWeatherByCoords(place.latitude, place.longitude, fullName);
+            } catch (err) {
+                alert(err.message);
+                loading.style.display = "none";
+            }
+        }
+
+        async function getWeatherByCoords(lat, lon, locationName) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&timezone=auto&forecast_days=2`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                showWeather(data, locationName);
+            } catch (err) {
+                alert("ডেটা আনতে সমস্যা হয়েছে");
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+
+        function showWeather(data, locationName) {
+            const current = data.current;
+
+            document.getElementById("locationName").textContent = locationName;
+            document.getElementById("temperature").textContent = Math.round(current.temperature_2m) + "°C";
+            document.getElementById("condition").textContent = getWeatherText(current.weather_code);
+            document.getElementById("windSpeed").textContent = Math.round(current.wind_speed_10m);
+            document.getElementById("precipProb").textContent = current.precipitation_probability || 0;
+            document.getElementById("feelsLike").textContent = Math.round(current.apparent_temperature);
+            document.getElementById("updatedTime").textContent = "Updated: " + new Date().toLocaleString();
+            document.getElementById("weatherIcon").textContent = getWeatherEmoji(current.weather_code);
+
+            showHourly(data.hourly);
+
+            currentWeather.style.display = "block";
+            hourlySection.style.display = "flex";
+        }
+
+        function showHourly(hourly) {
+            const prev = document.getElementById("previousHours");
+            const next = document.getElementById("nextHours");
+            prev.innerHTML = "";
+            next.innerHTML = "";
+
+            const now = new Date();
+            let past = [], future = [];
+
+            for (let i = 0; i < hourly.time.length; i++) {
+                const t = new Date(hourly.time[i]);
+                const item = { time: hourly.time[i], temp: hourly.temperature_2m[i], code: hourly.weather_code[i] };
+                if (t < now) past.push(item);
+                else future.push(item);
+            }
+
+            past.slice(-8).forEach(item => prev.innerHTML += makeBox(item));
+            future.slice(0, 8).forEach(item => next.innerHTML += makeBox(item));
+        }
+
+        function makeBox(item) {
+            return `
+                <div class="hour-item">
+                    <div class="time">${item.time.slice(11,16)}</div>
+                    <div style="font-size:22px">${getWeatherEmoji(item.code)}</div>
+                    <div class="temp">${Math.round(item.temp)}°C</div>
+                </div>
+            `;
+        }
+
+        function getWeatherText(code) {
+            if (code === 0) return "Clear Sky";
+            if (code <= 2) return "Partly Cloudy";
+            if (code === 3) return "Overcast";
+            if (code >= 45 && code <= 48) return "Foggy";
+            if (code >= 51 && code <= 67) return "Rain";
+            if (code >= 71 && code <= 77) return "Snow";
+            if (code >= 80) return "Rain Showers";
+            if (code >= 95) return "Thunderstorm";
+            return "Cloudy";
+        }
+
+        function getWeatherEmoji(code) {
+            if (code === 0) return "☀️";
+            if (code <= 2) return "⛅";
+            if (code === 3) return "☁️";
+            if (code >= 45 && code <= 48) return "🌫️";
+            if (code >= 51 && code <= 67) return "🌧️";
+            if (code >= 71 && code <= 77) return "❄️";
+            if (code >= 80) return "🌦️";
+            if (code >= 95) return "⛈️";
+            return "☁️";
+        }
+    </script>
+</body>
+</html>

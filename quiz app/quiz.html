@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="quiz-window">
+
+        <!-- STAGE 1: Start Screen -->
+        <div id="start-screen" class="screen-box">
+
+            <div class="header-icon">🎓</div>
+
+            <h2>Knowledge Quiz</h2>
+
+            <p class="tagline">
+                Test your general knowledge with multiple-choice questions!
+            </p>
+
+            <div class="rules-grid">
+
+                <div class="rule-item">
+                    <p>❓</p>
+                    <p>3 Questions</p>
+                </div>
+
+                <div class="rule-item">
+                    <p>🕒</p>
+                    <p>1 Minute per Question</p>
+                </div>
+
+                <div class="rule-item">
+                    <p>🏆</p>
+                    <p>Highest Score Wins</p>
+                </div>
+
+            </div>
+
+            <button id="start-btn" class="action-btn-black">
+                ▶ Start Quiz
+            </button>
+
+        </div>
+
+
+        <!-- STAGE 2 & 3: Question Screen -->
+        <div id="question-screen" class="screen-box" style="display: none;">
+
+            <div class="top-status">
+
+                <span id="question-counter">
+                    Question 1 of 3
+                </span>
+
+                <span id="timer">⏱️ 01:00</span>
+
+            </div>
+
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div class="score-display">
+                Score: <span id="current-score">0</span>
+            </div>
+
+            <div class="question-container">
+
+                <h3 id="question-text">
+                    Question text goes here?
+                </h3>
+
+            </div>
+
+            <div id="options-grid" class="options-grid">
+            </div>
+
+            <!-- Answer Feedback -->
+            <div id="feedback-box" class="feedback-box"
+                 style="visibility: hidden;">
+
+                <div class="feedback-message">
+
+                    <span id="feedback-status-icon"></span>
+
+                    <div>
+
+                        <strong id="feedback-title">
+                            Correct!
+                        </strong>
+
+                        <p id="explanation-text">
+                            Explanation details.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button id="next-btn" class="action-btn-black">
+                    Next →
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- STAGE 4: Results Screen -->
+        <div id="results-screen"
+             class="screen-box text-center"
+             style="display: none;">
+
+            <div class="medal-icon">🏆</div>
+
+            <h2>Quiz Completed!</h2>
+
+            <p class="result-label">
+                Your Final Score
+            </p>
+
+            <div class="final-score-badge">
+
+                <span id="final-score-text">0/3</span>
+
+            </div>
+
+            <p class="motivational-text">
+                Great job! 🎉
+            </p>
+
+            <div class="results-actions">
+
+                <button id="review-btn" class="action-btn-black">
+                    📋 Review Answers
+                </button>
+
+                <button onclick="restartQuiz()"
+                        class="action-btn-black">
+                    🔄 Try Again
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- REVIEW ANSWERS SCREEN -->
+        <div id="review-screen"
+             class="screen-box"
+             style="display: none;">
+
+            <h2>Review Answers</h2>
+
+            <p class="tagline">
+                Check your answers and learn from your mistakes!
+            </p>
+
+            <div id="review-list">
+            </div>
+
+            <button id="back-results-btn"
+                    class="action-btn-black">
+                ← Back to Results
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+</html>
